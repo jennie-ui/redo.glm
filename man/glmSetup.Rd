@@ -29,6 +29,7 @@ this model setup currently does not handle interaction terms.
 }
 \examples{
 # Example usage:
+Cell_Differentiation <- read.csv(system.file("data", "Cell_Differentiation.csv", package = "redo.glm"))
 glm_full <- glmSetup(res_var = "Count", base_var = "TNF", input_data = Cell_Differentiation, tolerance = 0.00001, log_offset = 0.1, max_iterations = 25)
 
 }

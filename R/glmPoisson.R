@@ -7,8 +7,9 @@
 #'
 #' @examples
 #' # Example usage:
+#' Cell_Differentiation <- read.csv(system.file("data", "Cell_Differentiation.csv", package = "redo.glm"))
 #' glm_full <- glmSetup(res_var = "Count", base_var = "TNF", input_data = Cell_Differentiation, tolerance = 0.00001, log_offset = 0.1, max_iterations = 25)
-#' poisson_diagnostics <- glmPoisson(glm_full)
+#' glmPoisson(glm_full)
 #'
 #' @export
 #'
@@ -48,10 +49,9 @@ glmPoisson <- function(myObject) {
   colnames(Var_beta)[1] = c("Intercept")
   Var_dis<-format(Var_beta, digits = 4, scientific = 4)
 
-  Wald_CI<-data.frame(Estimate=beta, Std_Deviation=sqrt(diag(Var_beta)))
-  rownames(Wald_CI)[1] = c("Intercept")
-  Wald_CI$CI_Lower = Wald_CI$Estimate-1.96*Wald_CI$Std_Deviation
-  Wald_CI$CI_Upper = Wald_CI$Estimate+1.96*Wald_CI$Std_Deviation
+  Std_Deviation <- sqrt(diag(Var_beta))
+
+  Wald_CI<-data.frame(CI_Lower=beta-1.96*Std_Deviation, CI_Upper=beta+1.96*Std_Deviation)
   Wald_CI = format(Wald_CI, digits= 7)
 
   r_p = (Y-mu)/sqrt(mu)
@@ -65,7 +65,7 @@ glmPoisson <- function(myObject) {
   r_PS = r_p/sqrt(1-Leverage)
   r_DS = r_D/sqrt(1-Leverage)
 
-  CookD = myObject$Leverage / (num_predictors * (1 - myObject$Leverage)) * (r_PS)^2
+  CookD = Leverage / (num_predictors * (1 - Leverage)) * (r_PS)^2
 
   D = sum(D_i)
   chiP = sum(r_p^2)
@@ -76,13 +76,17 @@ glmPoisson <- function(myObject) {
   colnames(res) = c("Deviance", "chi^2_P", "chi^2_{n-q(num_predictors),0.95}")
 
   # Return a more structured result
-  return(
-    variance_covariance_matrix = Var_dis,
-    estimates_and_intervals = Wald_CI,
-    residuals = list(pearson = r_p, deviance = r_D),
-    leverage = Leverage,
-    standardized_residuals = list(pearson = r_PS, deviance = r_DS),
-    cooks_distance = CookD,
-    goodness_of_fit = res
+  newList = list(
+    "variance_covariance_matrix" = Var_dis,
+    "estimates" = beta,
+    "std" = Std_Deviation,
+    "confidence_interval" = Wald_CI,
+    "residuals" = list(pearson = r_p, deviance = r_D),
+    "leverage" = Leverage,
+    "standardized_residuals" = list(pearson = r_PS, deviance = r_DS),
+    "cooks_distance" = CookD,
+    "goodness_of_fit" = res
   )
+
+  return(newList)
 }

@@ -1,0 +1,82 @@
+---
+title: "Comparison Vignette"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+# Introduction
+
+This vignette compares the functions in the `redo.glm` package against the original R functions.
+
+## Setup
+
+```{r}
+library(redo.glm)
+library(bench)
+```
+
+```{r}
+# load data
+Cell_Differentiation <- read.csv('data/Cell_Differentiation.csv')
+
+# my function
+glm_full <- glmSetup(res_var = "Count", base_var = "TNF", input_data = Cell_Differentiation, tolerance = 0.00001, log_offset = 0.1, max_iterations = 25)
+```
+
+```{r}
+# base R function
+glm_Poisson_full <- glm(data=Cell_Differentiation, Count ~ TNF + IFN, family=poisson())
+
+# Check correctness of part 1
+print(all.equal(as.numeric(glmPoisson(glm_full)$estimates), as.numeric(coef(glm_Poisson_full))))
+
+# Check correctness of part 2
+print(all.equal(as.numeric(glmPoisson(glm_full)$std), as.numeric(sqrt(diag(vcov(glm_Poisson_full))))))
+
+# Check correctness of part 3
+print(all.equal(as.numeric(unlist(glmPoisson(glm_full)$residuals[1])), as.numeric(unlist(residuals(glm_Poisson_full,type='pearson')))))
+
+# Check correctness of part 4
+print(all.equal(as.numeric(unlist(glmPoisson(glm_full)$residuals[2])), as.numeric(unlist(residuals(glm_Poisson_full,type='deviance')))))
+
+# Check efficiency
+benchmark_results_glmPoisson <- bench::mark(
+  glmPoisson(glm_full),
+  #glm_Poisson_full,
+  iterations = 100
+)
+
+# Print benchmark results for glmPoisson
+print(benchmark_results_glmPoisson)
+```
+
+```{r}
+Y <- Cell_Differentiation$Count
+baseLine <- Cell_Differentiation$TNF
+Y_star <- Y < baseLine
+
+# base R function
+glm_Binomial_full <- glm(data = Cell_Differentiation, Y_star ~ TNF + IFN, family=binomial(link="logit"))
+
+# Check correctness of part 1
+print(all.equal(as.numeric(glmBinomial(glm_full)$estimates), as.numeric(coef(glm_Binomial_full))))
+
+# Check correctness of part 2
+print(all.equal(as.numeric(glmBinomial(glm_full)$std), as.numeric(sqrt(diag(vcov(glm_Binomial_full))))))
+
+# Check correctness of part 3
+print(all.equal(as.numeric(unlist(glmBinomial(glm_full)$residuals[1])), as.numeric(unlist(residuals(glm_Binomial_full,type='pearson')))))
+
+# Check efficiency
+benchmark_results_glmBinomial <- bench::mark(
+  glmBinomial(glm_full),
+  #glm_Binomial_full,
+  iterations = 100
+)
+
+# Print benchmark results for glmBinomial
+print(benchmark_results_glmBinomial)
+```
+
