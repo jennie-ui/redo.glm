@@ -1,0 +1,11 @@
+Package: redo.glm
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("Jingyu", "Zhao", , "jingyzh@umich.edu", role = c("aut", "cre"))
+Description: Implements a package for fitting generalized linear models using Iteratively Reweighted Least Squares (IRWLS). The package includes functions for model setup, specifically handling input data with Poisson and binomial distributions. The main effects model with no interaction terms is employed, and the fitting process is achieved through iterative optimization. The package provides tools for model diagnostics, including histograms, variance-covariance matrices, and standardized residuals. Note that the current implementation does not support interaction terms in the model.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
