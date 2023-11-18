@@ -1,2 +1,4 @@
-importFrom("graphics", "hist")
-importFrom("stats", "qchisq")
+exportPattern("^[[:alpha:]]+")
+export(glmSetup)
+export(glmBinomial)
+export(glmPoisson)
